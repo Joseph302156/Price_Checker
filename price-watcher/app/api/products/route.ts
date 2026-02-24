@@ -27,13 +27,14 @@ export async function POST(request: Request) {
     }
     const url = body.url.trim()
     const name = body.name.trim()
+    const category = typeof body.category === 'string' ? body.category.trim() || null : null
     if (!url || !name) {
       return NextResponse.json(
         { error: '"url" and "name" are required' },
         { status: 400 }
       )
     }
-    const product = await createProduct({ url, name })
+    const product = await createProduct({ url, name, category })
     return NextResponse.json({ product }, { status: 201 })
   } catch (error) {
     console.error('[products] POST error', error)

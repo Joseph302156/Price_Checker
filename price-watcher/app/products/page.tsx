@@ -9,6 +9,9 @@ interface Product {
   name: string
   last_price: number | null
   last_checked_at: string | null
+  on_sale: boolean | null
+  category: string | null
+  availability: string | null
 }
 
 export default function ProductsPage() {
@@ -16,6 +19,7 @@ export default function ProductsPage() {
   const [loading, setLoading] = useState(true)
   const [name, setName] = useState('')
   const [url, setUrl] = useState('')
+  const [category, setCategory] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
   const [syncing, setSyncing] = useState(false)
@@ -52,7 +56,7 @@ export default function ProductsPage() {
       const res = await fetch('/api/products', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, url }),
+        body: JSON.stringify({ name, url, category: category || undefined }),
       })
       if (!res.ok) {
         const data = await res.json().catch(() => ({}))
@@ -60,6 +64,7 @@ export default function ProductsPage() {
       }
       setName('')
       setUrl('')
+      setCategory('')
       await loadProducts()
     } catch (err) {
       console.error(err)
@@ -137,8 +142,11 @@ export default function ProductsPage() {
                   <thead className="bg-cream/5 text-cream/70">
                     <tr>
                       <th className="text-left px-5 py-3 font-normal">Name</th>
+                      <th className="text-left px-5 py-3 font-normal">Category</th>
                       <th className="text-left px-5 py-3 font-normal">URL</th>
-                      <th className="text-right px-5 py-3 font-normal">Last price</th>
+                      <th className="text-right px-5 py-3 font-normal">Price</th>
+                      <th className="text-center px-5 py-3 font-normal">Sale</th>
+                      <th className="text-center px-5 py-3 font-normal">Stock</th>
                       <th className="text-right px-5 py-3 font-normal">Last checked</th>
                     </tr>
                   </thead>
@@ -149,6 +157,9 @@ export default function ProductsPage() {
                         className="border-t border-cream/10 hover:bg-cream/5"
                       >
                         <td className="px-5 py-3 text-cream">{product.name}</td>
+                        <td className="px-5 py-3 text-cream/80">
+                          {product.category || '—'}
+                        </td>
                         <td className="px-5 py-3">
                           <a
                             href={product.url}
@@ -166,6 +177,26 @@ export default function ProductsPage() {
                             </span>
                           ) : (
                             <span className="text-cream/40 text-xs">—</span>
+                          )}
+                        </td>
+                        <td className="px-5 py-3 text-center">
+                          {product.on_sale === true ? (
+                            <span className="text-ember text-xs">Yes</span>
+                          ) : product.on_sale === false ? (
+                            <span className="text-cream/50 text-xs">No</span>
+                          ) : (
+                            <span className="text-cream/40 text-xs">—</span>
+                          )}
+                        </td>
+                        <td className="px-5 py-3 text-center text-xs">
+                          {product.availability === 'in_stock' ? (
+                            <span className="text-green-400/90">In stock</span>
+                          ) : product.availability === 'out_of_stock' ? (
+                            <span className="text-amber-400/90">Out of stock</span>
+                          ) : product.availability === 'unavailable' ? (
+                            <span className="text-cream/50">Unavailable</span>
+                          ) : (
+                            <span className="text-cream/40">—</span>
                           )}
                         </td>
                         <td className="px-5 py-3 text-right text-xs text-cream/50">
@@ -205,6 +236,16 @@ export default function ProductsPage() {
                   value={url}
                   onChange={(e) => setUrl(e.target.value)}
                   placeholder="https://..."
+                  className="w-full rounded-full bg-ink border border-cream/15 px-4 py-2.5 text-sm font-body text-cream placeholder:text-cream/30 focus:outline-none focus:ring-2 focus:ring-ember/70"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="block text-xs font-body text-cream/60">Category (optional)</label>
+                <input
+                  type="text"
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
+                  placeholder="e.g. Electronics, Clothing"
                   className="w-full rounded-full bg-ink border border-cream/15 px-4 py-2.5 text-sm font-body text-cream placeholder:text-cream/30 focus:outline-none focus:ring-2 focus:ring-ember/70"
                 />
               </div>
