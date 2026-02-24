@@ -3,7 +3,7 @@ import './globals.css'
 
 export const metadata: Metadata = {
   title: 'Price Watcher',
-  description: 'Watch prices for a few products. Sync via cron.',
+  description: 'Keep track of price changes for products you want to monitor.',
 }
 
 export default function RootLayout({

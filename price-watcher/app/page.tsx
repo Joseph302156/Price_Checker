@@ -19,11 +19,11 @@ export default function HomePage() {
 
       <main className="max-w-6xl mx-auto px-8 py-16">
         <h1 className="font-display text-4xl md:text-5xl tracking-tight mb-4">
-          Price watcher for a few products
+          Keep track of price changes
         </h1>
         <p className="font-body text-lg text-cream/60 max-w-2xl mb-8">
-          Add products by URL, then run the cron endpoint to update their prices.
-          Start with the products page.
+          A place to track prices for products you want to monitor—any site, any
+          product. Add items when you’re ready and run a sync to update prices.
         </p>
         <Link
           href="/products"

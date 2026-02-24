@@ -103,11 +103,11 @@ export default function ProductsPage() {
       <main className="max-w-6xl mx-auto px-8 py-12 space-y-10">
         <section className="space-y-4">
           <h1 className="font-display text-3xl md:text-4xl tracking-tight">
-            Products
+            Products you’re watching
           </h1>
           <p className="font-body text-sm text-cream/60 max-w-2xl">
-            Add products by URL and name. Use &quot;Sync prices&quot; to run the
-            cron logic (random prices for now).
+            Add any product by name and URL. Sync updates stored prices (placeholder
+            data for now until you decide which sites to use and how their data looks).
           </p>
         </section>
 
@@ -129,7 +129,8 @@ export default function ProductsPage() {
                 <div className="p-6 text-sm text-cream/50">Loading…</div>
               ) : products.length === 0 ? (
                 <div className="p-6 text-sm text-cream/50">
-                  No products yet. Add one with the form on the right.
+                  No products yet. When you’re ready, add any product you want to
+                  track with the form on the right.
                 </div>
               ) : (
                 <table className="w-full text-sm font-body">
@@ -182,6 +183,10 @@ export default function ProductsPage() {
 
           <div className="rounded-3xl border border-cream/10 bg-cream/[0.02] p-6 space-y-4">
             <h2 className="font-display text-lg">Add a product</h2>
+            <p className="font-body text-xs text-cream/60">
+              Any product from any site—you decide what to track. Data shape and
+              which sites to support can be figured out later.
+            </p>
             <form onSubmit={handleAddProduct} className="space-y-4">
               <div className="space-y-2">
                 <label className="block text-xs font-body text-cream/60">Name</label>
@@ -189,7 +194,7 @@ export default function ProductsPage() {
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="e.g. MacBook Pro"
+                  placeholder="Product name (whatever you want to call it)"
                   className="w-full rounded-full bg-ink border border-cream/15 px-4 py-2.5 text-sm font-body text-cream placeholder:text-cream/30 focus:outline-none focus:ring-2 focus:ring-ember/70"
                 />
               </div>
