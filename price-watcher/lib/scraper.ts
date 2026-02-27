@@ -54,6 +54,7 @@ async function genericScrape(url: string): Promise<ScrapeResult | null> {
 
   const priceText =
     $('.product-main__body__info__hero__price').first().text().trim() ||
+    $('.sc-n2qm0y-0, .hYZtdO').first().text().trim() ||
     $('[data-test-id="price"]').first().text().trim() ||
     $('.price, .product-price, [itemprop="price"]').first().text().trim()
 
