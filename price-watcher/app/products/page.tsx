@@ -12,6 +12,7 @@ interface Product {
   on_sale: boolean | null
   category: string | null
   availability: string | null
+  image_url: string | null
 }
 
 export default function ProductsPage() {
@@ -259,9 +260,26 @@ export default function ProductsPage() {
                         ) : (
                           <>
                         <div className="flex flex-wrap items-start justify-between gap-3 mb-4">
-                          <h3 className="font-body text-lg sm:text-xl font-semibold text-ink leading-snug">
-                            {product.name}
-                          </h3>
+                          <div className="flex items-center gap-4 min-w-0 flex-1">
+                            <div className="shrink-0 w-16 h-16 sm:w-20 sm:h-20 rounded-xl bg-slate-200 overflow-hidden">
+                              {product.image_url ? (
+                                <img
+                                  src={product.image_url}
+                                  alt=""
+                                  className="w-full h-full object-cover"
+                                  width={80}
+                                  height={80}
+                                />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center text-slate-400" aria-hidden>
+                                  <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm3 2h6v4H7V5zm8 8v2h1v-2h-1zm-2-2H7v2h6v-2zm4-4h1V7h-1v2zM5 7v2H4V7h1z" clipRule="evenodd" /></svg>
+                                </div>
+                              )}
+                            </div>
+                            <h3 className="font-body text-lg sm:text-xl font-semibold text-ink leading-snug">
+                              {product.name}
+                            </h3>
+                          </div>
                           <div className="flex items-center gap-3 shrink-0">
                             {product.last_price != null ? (
                               <span className="font-body text-xl font-bold text-ink">

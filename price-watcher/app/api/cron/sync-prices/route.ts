@@ -38,6 +38,7 @@ export async function GET(request: Request) {
         last_price: result.last_price,
         on_sale: result.on_sale ?? undefined,
         availability: result.availability ?? undefined,
+        image_url: result.image_url ?? undefined,
       })
       updated++
     }

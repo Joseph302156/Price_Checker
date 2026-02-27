@@ -5,6 +5,7 @@ export interface ScrapeResult {
   last_price: number | null
   on_sale?: boolean | null
   availability?: Availability | null
+  image_url?: string | null
 }
 
 function parsePrice(raw?: string | null): number | null {
@@ -94,7 +95,15 @@ async function genericScrape(url: string): Promise<ScrapeResult | null> {
     availability = 'out_of_stock'
   }
 
-  return { last_price, on_sale, availability }
+  let image_url: string | null = null
+  const ogImage = $('meta[property="og:image"]').attr('content')
+  if (ogImage) image_url = ogImage.startsWith('//') ? `https:${ogImage}` : ogImage
+  if (!image_url) {
+    const img = $('[itemprop="image"]').attr('src') || $('img[itemprop="image"]').first().attr('src')
+    if (img) image_url = img.startsWith('//') ? `https:${img}` : img.startsWith('/') ? new URL(url).origin + img : img
+  }
+
+  return { last_price, on_sale, availability, image_url }
 }
 
 /** Musinsa (global.musinsa.com) is a SPA; price is in JSON-LD and inline script, not in DOM. */
@@ -137,7 +146,11 @@ async function scrapeMusinsa(url: string): Promise<ScrapeResult | null> {
     if (currencyPrice) last_price = parseFloat(currencyPrice[1])
   }
 
-  return { last_price, on_sale: undefined, availability }
+  let image_url: string | null = null
+  const imageMatch = html.match(/"image"\s*:\s*"((?:https?:)?\/\/[^"]+)"/)
+  if (imageMatch) image_url = imageMatch[1].startsWith('//') ? `https:${imageMatch[1]}` : imageMatch[1]
+
+  return { last_price, on_sale: undefined, availability, image_url }
 }
 
 async function scrapeAmazon(url: string): Promise<ScrapeResult | null> {
@@ -201,6 +214,14 @@ async function scrapeAmazon(url: string): Promise<ScrapeResult | null> {
     /deal|save|% off|coupon|discount/i.test(badgeText) ||
     undefined
 
-  return { last_price, on_sale, availability }
+  let image_url: string | null = null
+  const ogImage = $('meta[property="og:image"]').attr('content')
+  if (ogImage) image_url = ogImage.startsWith('//') ? `https:${ogImage}` : ogImage
+  if (!image_url) {
+    const img = $('#landingImage').attr('src') || $('img[data-a-dynamic-image]').first().attr('src')
+    if (img) image_url = img.startsWith('//') ? `https:${img}` : img
+  }
+
+  return { last_price, on_sale, availability, image_url }
 }
 

@@ -23,6 +23,7 @@ export interface Product {
   on_sale: boolean | null
   category: string | null
   availability: Availability | null
+  image_url: string | null
   created_at: string
   updated_at: string
 }
@@ -62,6 +63,7 @@ export async function updateProductSync(
     last_price: number
     on_sale?: boolean
     availability?: Availability
+    image_url?: string | null
   }
 ): Promise<Product> {
   const now = new Date().toISOString()
@@ -72,6 +74,7 @@ export async function updateProductSync(
       last_checked_at: now,
       ...(data.on_sale !== undefined && { on_sale: data.on_sale }),
       ...(data.availability !== undefined && { availability: data.availability }),
+      ...(data.image_url !== undefined && { image_url: data.image_url }),
     })
     .eq('id', id)
     .select('*')

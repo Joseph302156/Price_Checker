@@ -1,4 +1,4 @@
--- Products table: url, name, price, sale, category, availability
+-- Products table: url, name, price, sale, category, availability, image
 CREATE TABLE products (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   url TEXT NOT NULL,
@@ -8,6 +8,7 @@ CREATE TABLE products (
   on_sale BOOLEAN,
   category TEXT,
   availability TEXT,
+  image_url TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
