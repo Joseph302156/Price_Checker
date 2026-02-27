@@ -19,6 +19,10 @@ function isAmazonHost(host: string): boolean {
   return host.includes('amazon.')
 }
 
+function isMusinsaHost(host: string): boolean {
+  return host.includes('musinsa.com')
+}
+
 export async function scrapeProduct(url: string): Promise<ScrapeResult | null> {
   let hostname: string
   try {
@@ -30,6 +34,10 @@ export async function scrapeProduct(url: string): Promise<ScrapeResult | null> {
 
   if (isAmazonHost(hostname)) {
     return scrapeAmazon(url)
+  }
+
+  if (isMusinsaHost(hostname)) {
+    return scrapeMusinsa(url)
   }
 
   return genericScrape(url)
@@ -87,6 +95,49 @@ async function genericScrape(url: string): Promise<ScrapeResult | null> {
   }
 
   return { last_price, on_sale, availability }
+}
+
+/** Musinsa (global.musinsa.com) is a SPA; price is in JSON-LD and inline script, not in DOM. */
+async function scrapeMusinsa(url: string): Promise<ScrapeResult | null> {
+  const res = await fetch(url, {
+    headers: {
+      'User-Agent':
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36',
+      'Accept-Language': 'en-US,en;q=0.9',
+    },
+  })
+
+  if (!res.ok) {
+    console.warn('[scraper][musinsa] Failed to fetch', url, res.status)
+    return null
+  }
+
+  const html = await res.text()
+
+  let last_price: number | null = null
+  let availability: Availability = 'in_stock'
+
+  // 1) JSON-LD Product: "offers":{"priceCurrency":"USD","price":151.0,"availability":"https://schema.org/InStock"}
+  const offersPriceMatch = html.match(/"offers"\s*:\s*\{[\s\S]*?"price"\s*:\s*(\d+(?:\.\d+)?)/)
+  if (offersPriceMatch) {
+    last_price = parseFloat(offersPriceMatch[1])
+  }
+  const availabilityMatch = html.match(/"availability"\s*:\s*"https:\/\/schema\.org\/(InStock|OutOfStock|Discontinued)"/i)
+  if (availabilityMatch && /OutOfStock|Discontinued/i.test(availabilityMatch[1])) {
+    availability = 'out_of_stock'
+  }
+
+  // 2) Fallback: inline script "price":151.0 or CURRENCY_PRICE = Number(151.0)
+  if (last_price == null) {
+    const priceInJson = html.match(/"price"\s*:\s*(\d+(?:\.\d+)?)/)
+    if (priceInJson) last_price = parseFloat(priceInJson[1])
+  }
+  if (last_price == null) {
+    const currencyPrice = html.match(/CURRENCY_PRICE\s*=\s*Number\s*\(\s*([\d.]+)\s*\)/)
+    if (currencyPrice) last_price = parseFloat(currencyPrice[1])
+  }
+
+  return { last_price, on_sale: undefined, availability }
 }
 
 async function scrapeAmazon(url: string): Promise<ScrapeResult | null> {
