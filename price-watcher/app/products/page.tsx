@@ -23,6 +23,7 @@ export default function ProductsPage() {
   const [error, setError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
   const [syncing, setSyncing] = useState(false)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
 
   async function loadProducts() {
     try {
@@ -43,6 +44,26 @@ export default function ProductsPage() {
   useEffect(() => {
     loadProducts()
   }, [])
+
+  async function handleDeleteProduct(id: string) {
+    try {
+      setDeletingId(id)
+      setError(null)
+      const res = await fetch(`/api/products?id=${encodeURIComponent(id)}`, {
+        method: 'DELETE',
+      })
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        throw new Error(data.error || 'Failed to delete product')
+      }
+      await loadProducts()
+    } catch (err) {
+      console.error(err)
+      setError(err instanceof Error ? err.message : 'Could not delete product.')
+    } finally {
+      setDeletingId((current) => (current === id ? null : current))
+    }
+  }
 
   async function handleAddProduct(e: React.FormEvent) {
     e.preventDefault()
@@ -148,6 +169,7 @@ export default function ProductsPage() {
                       <th className="text-center px-5 py-3 font-normal">Sale</th>
                       <th className="text-center px-5 py-3 font-normal">Stock</th>
                       <th className="text-right px-5 py-3 font-normal">Last checked</th>
+                      <th className="text-right px-5 py-3 font-normal">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -165,9 +187,18 @@ export default function ProductsPage() {
                             href={product.url}
                             target="_blank"
                             rel="noreferrer"
-                            className="text-ember text-xs break-all hover:underline"
+                            className="text-blue-400 text-xs hover:underline"
                           >
-                            {product.url}
+                            {(() => {
+                              try {
+                                const u = new URL(product.url)
+                                return u.hostname
+                              } catch {
+                                return product.url.length > 32
+                                  ? product.url.slice(0, 29) + '...'
+                                  : product.url
+                              }
+                            })()}
                           </a>
                         </td>
                         <td className="px-5 py-3 text-right">
@@ -203,6 +234,16 @@ export default function ProductsPage() {
                           {product.last_checked_at
                             ? new Date(product.last_checked_at).toLocaleString()
                             : '—'}
+                        </td>
+                        <td className="px-5 py-3 text-right">
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteProduct(product.id)}
+                            disabled={deletingId === product.id}
+                            className="text-xs text-cream/60 hover:text-red-400 disabled:opacity-40"
+                          >
+                            {deletingId === product.id ? 'Removing…' : 'Remove'}
+                          </button>
                         </td>
                       </tr>
                     ))}

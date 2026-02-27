@@ -80,3 +80,9 @@ export async function updateProductSync(
   if (error) throw error
   return updated as Product
 }
+
+export async function deleteProduct(id: string): Promise<void> {
+  const { error } = await supabase.from('products').delete().eq('id', id)
+  if (error) throw error
+}
+
