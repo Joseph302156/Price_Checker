@@ -52,13 +52,23 @@ async function genericScrape(url: string): Promise<ScrapeResult | null> {
   const html = await res.text()
   const $ = load(html)
 
-  const priceText =
-    $('.product-main__body__info__hero__price').first().text().trim() ||
-    $('.sc-n2qm0y-0, .hYZtdO').first().text().trim() ||
-    $('[data-test-id="price"]').first().text().trim() ||
-    $('.price, .product-price, [itemprop="price"]').first().text().trim()
-
-  const last_price = parsePrice(priceText)
+  // Try each price selector; use first that yields a valid number (so empty/JS placeholders don't win)
+  const priceSelectors = [
+    '.product-main__body__info__hero__price',
+    'span[class*="sc-n2qm0y-0"]',
+    '[class*="hYZtdO"]',
+    '[data-test-id="price"]',
+    '.price, .product-price, [itemprop="price"]',
+  ]
+  let last_price: number | null = null
+  for (const sel of priceSelectors) {
+    const raw = $(sel).first().text().trim()
+    const p = parsePrice(raw)
+    if (p != null) {
+      last_price = p
+      break
+    }
+  }
 
   const priceBlockText = $('.price, .product-price').text()
   const on_sale =
