@@ -64,16 +64,15 @@ async function genericScrape(url: string): Promise<ScrapeResult | null> {
     $('.badge-sale, .label-sale, .sale-price').length > 0 ||
     /sale|discount|save/i.test(priceBlockText)
 
-  let availability: Availability | null = null
+  let availability: Availability = 'in_stock'
   const availabilityText = $('button.add-to-cart, button#add-to-cart, .stock-status')
     .first()
     .text()
     .toLowerCase()
+  const bodyText = $('body').text().toLowerCase()
 
-  if (/out of stock|sold out|unavailable/.test(availabilityText)) {
+  if (/out of stock|sold out|unavailable/.test(availabilityText) || /out of stock|sold out|currently unavailable/.test(bodyText)) {
     availability = 'out_of_stock'
-  } else if (/in stock|available|ships/.test(availabilityText)) {
-    availability = 'in_stock'
   }
 
   return { last_price, on_sale, availability }
@@ -121,16 +120,15 @@ async function scrapeAmazon(url: string): Promise<ScrapeResult | null> {
 
   const last_price = parsePrice(priceText)
 
-  // Availability
+  // Availability: assume in_stock unless page says otherwise
   const availabilityRaw =
-    $('#availability .a-color-success').first().text().trim().toLowerCase() ||
-    $('#availability .a-color-state').first().text().trim().toLowerCase() ||
+    $('#availability .a-color-success').first().text().trim().toLowerCase() +
+    $('#availability .a-color-state').first().text().trim().toLowerCase() +
     $('#availability').first().text().trim().toLowerCase()
+  const bodyText = $('body').text().toLowerCase()
 
-  let availability: Availability | null = null
-  if (/in stock|ready to ship|usually ships/.test(availabilityRaw)) {
-    availability = 'in_stock'
-  } else if (/out of stock|unavailable|temporarily unavailable/.test(availabilityRaw)) {
+  let availability: Availability = 'in_stock'
+  if (/out of stock|unavailable|temporarily unavailable|sold out/.test(availabilityRaw) || /currently unavailable|out of stock|sold out/.test(bodyText)) {
     availability = 'out_of_stock'
   }
 
