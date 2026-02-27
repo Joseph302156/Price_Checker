@@ -17,6 +17,10 @@ module.exports = {
         ember: '#ff9900', // Amazon orange
         pacific: '#146eb4', // Amazon blue
       },
+      borderRadius: {
+        '4xl': '2rem',
+        '5xl': '2.5rem',
+      },
     },
   },
   plugins: [],
