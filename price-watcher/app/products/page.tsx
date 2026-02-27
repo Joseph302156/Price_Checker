@@ -24,6 +24,10 @@ export default function ProductsPage() {
   const [saving, setSaving] = useState(false)
   const [syncing, setSyncing] = useState(false)
   const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [editName, setEditName] = useState('')
+  const [editCategory, setEditCategory] = useState('')
+  const [savingEditId, setSavingEditId] = useState<string | null>(null)
 
   async function loadProducts() {
     try {
@@ -113,6 +117,50 @@ export default function ProductsPage() {
     }
   }
 
+  function startEditing(product: Product) {
+    setEditingId(product.id)
+    setEditName(product.name)
+    setEditCategory(product.category ?? '')
+    setError(null)
+  }
+
+  function cancelEditing() {
+    setEditingId(null)
+    setEditName('')
+    setEditCategory('')
+  }
+
+  async function handleSaveEdit(id: string) {
+    if (!editName.trim()) {
+      setError('Name is required.')
+      return
+    }
+    try {
+      setSavingEditId(id)
+      setError(null)
+      const res = await fetch('/api/products', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id,
+          name: editName.trim(),
+          category: editCategory.trim() || null,
+        }),
+      })
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        throw new Error(data.error || 'Failed to update product')
+      }
+      cancelEditing()
+      await loadProducts()
+    } catch (err) {
+      console.error(err)
+      setError(err instanceof Error ? err.message : 'Could not update product.')
+    } finally {
+      setSavingEditId((current) => (current === id ? null : current))
+    }
+  }
+
   return (
     <div className="min-h-screen bg-cream text-ink">
       <header className="border-b border-slate-200 bg-ink text-cream">
@@ -168,6 +216,48 @@ export default function ProductsPage() {
                       className="rounded-2xl border border-slate-200 bg-slate-50/50 hover:bg-slate-50 hover:border-slate-300/80 transition-colors overflow-hidden"
                     >
                       <div className="p-5 sm:p-6">
+                        {editingId === product.id ? (
+                          <div className="space-y-4">
+                            <div className="space-y-2">
+                              <label className="block text-sm font-body font-medium text-slate-700">Name</label>
+                              <input
+                                type="text"
+                                value={editName}
+                                onChange={(e) => setEditName(e.target.value)}
+                                className="w-full rounded-2xl border border-slate-300 px-4 py-2.5 text-base font-body text-ink focus:outline-none focus:ring-2 focus:ring-pacific/50"
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <label className="block text-sm font-body font-medium text-slate-700">Category</label>
+                              <input
+                                type="text"
+                                value={editCategory}
+                                onChange={(e) => setEditCategory(e.target.value)}
+                                placeholder="Optional"
+                                className="w-full rounded-2xl border border-slate-300 px-4 py-2.5 text-base font-body text-ink placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-pacific/50"
+                              />
+                            </div>
+                            <div className="flex gap-2">
+                              <button
+                                type="button"
+                                onClick={() => handleSaveEdit(product.id)}
+                                disabled={savingEditId === product.id}
+                                className="px-4 py-2 rounded-2xl bg-ember text-ink text-sm font-semibold hover:bg-amber-400 disabled:opacity-50"
+                              >
+                                {savingEditId === product.id ? 'Saving…' : 'Save'}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={cancelEditing}
+                                disabled={savingEditId === product.id}
+                                className="px-4 py-2 rounded-2xl border border-slate-300 text-slate-700 text-sm font-medium hover:bg-slate-100 disabled:opacity-50"
+                              >
+                                Cancel
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          <>
                         <div className="flex flex-wrap items-start justify-between gap-3 mb-4">
                           <h3 className="font-body text-lg sm:text-xl font-semibold text-ink leading-snug">
                             {product.name}
@@ -180,6 +270,13 @@ export default function ProductsPage() {
                             ) : (
                               <span className="text-slate-400 text-base">—</span>
                             )}
+                            <button
+                              type="button"
+                              onClick={() => startEditing(product)}
+                              className="font-body text-sm text-slate-500 hover:text-pacific transition-colors"
+                            >
+                              Edit
+                            </button>
                             <button
                               type="button"
                               onClick={() => handleDeleteProduct(product.id)}
@@ -228,6 +325,8 @@ export default function ProductsPage() {
                           <p className="mt-3 text-sm text-slate-400">
                             Last checked {new Date(product.last_checked_at).toLocaleString()}
                           </p>
+                        )}
+                          </>
                         )}
                       </div>
                     </li>

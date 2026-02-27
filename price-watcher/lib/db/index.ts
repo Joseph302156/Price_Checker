@@ -86,3 +86,28 @@ export async function deleteProduct(id: string): Promise<void> {
   if (error) throw error
 }
 
+export async function updateProduct(
+  id: string,
+  data: { name?: string; category?: string | null }
+): Promise<Product> {
+  const payload: Record<string, unknown> = {}
+  if (data.name !== undefined) payload.name = data.name.trim()
+  if (data.category !== undefined) payload.category = data.category === '' ? null : data.category
+
+  if (Object.keys(payload).length === 0) {
+    const { data: existing } = await supabase.from('products').select('*').eq('id', id).single()
+    if (!existing) throw new Error('Product not found')
+    return existing as Product
+  }
+
+  const { data: updated, error } = await supabase
+    .from('products')
+    .update(payload)
+    .eq('id', id)
+    .select('*')
+    .single()
+
+  if (error) throw error
+  return updated as Product
+}
+

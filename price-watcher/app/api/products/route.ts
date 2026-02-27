@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { createProduct, deleteProduct, getAllProducts } from '@/lib/db'
+import { createProduct, deleteProduct, getAllProducts, updateProduct } from '@/lib/db'
 
 export const dynamic = 'force-dynamic'
 
@@ -58,6 +58,27 @@ export async function DELETE(request: Request) {
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error('[products] DELETE error', error)
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : 'Unknown error' },
+      { status: 500 }
+    )
+  }
+}
+
+export async function PATCH(request: Request) {
+  try {
+    const body = await request.json().catch(() => null)
+    if (!body || typeof body.id !== 'string') {
+      return NextResponse.json({ error: 'Missing "id"' }, { status: 400 })
+    }
+    const id = body.id.trim()
+    const name = body.name !== undefined ? (typeof body.name === 'string' ? body.name.trim() : '') : undefined
+    const category = body.category !== undefined ? (typeof body.category === 'string' ? body.category.trim() || null : null) : undefined
+
+    const product = await updateProduct(id, { name, category })
+    return NextResponse.json({ product })
+  } catch (error) {
+    console.error('[products] PATCH error', error)
     return NextResponse.json(
       { error: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
