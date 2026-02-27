@@ -1,4 +1,4 @@
-import cheerio from 'cheerio'
+import { load } from 'cheerio'
 import type { Availability } from './db'
 
 export interface ScrapeResult {
@@ -30,7 +30,7 @@ export async function scrapeProduct(url: string): Promise<ScrapeResult | null> {
   }
 
   const html = await res.text()
-  const $ = cheerio.load(html)
+  const $ = load(html)
 
   // NOTE: selectors here are speculative and should be adapted
   const priceText =
