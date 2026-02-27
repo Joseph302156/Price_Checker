@@ -11,9 +11,11 @@ module.exports = {
         body: ['var(--font-body)', 'system-ui', 'sans-serif'],
       },
       colors: {
-        ink: '#0a0a0a',
-        cream: '#f5f2eb',
-        ember: '#ff4d00',
+        // Amazon-inspired palette
+        ink: '#0f1111', // near-black header text
+        cream: '#f9fafb', // light page background
+        ember: '#ff9900', // Amazon orange
+        pacific: '#146eb4', // Amazon blue
       },
     },
   },
