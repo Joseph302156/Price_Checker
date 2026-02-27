@@ -65,13 +65,13 @@ async function genericScrape(url: string): Promise<ScrapeResult | null> {
     /sale|discount|save/i.test(priceBlockText)
 
   let availability: Availability = 'in_stock'
-  const availabilityText = $('button.add-to-cart, button#add-to-cart, .stock-status')
+  const availabilityText = $('button.add-to-cart, button#add-to-cart, .stock-status, [class*="availability"], [class*="stock"]')
     .first()
     .text()
     .toLowerCase()
-  const bodyText = $('body').text().toLowerCase()
 
-  if (/out of stock|sold out|unavailable/.test(availabilityText) || /out of stock|sold out|currently unavailable/.test(bodyText)) {
+  // Only mark out of stock when we see explicit phrasing in stock-related elements (no body scan)
+  if (/out of stock|sold out\b/.test(availabilityText)) {
     availability = 'out_of_stock'
   }
 
@@ -120,15 +120,12 @@ async function scrapeAmazon(url: string): Promise<ScrapeResult | null> {
 
   const last_price = parsePrice(priceText)
 
-  // Availability: assume in_stock unless page says otherwise
+  // Availability: assume in_stock; only out_of_stock when #availability explicitly says so (no body scan)
   const availabilityRaw =
-    $('#availability .a-color-success').first().text().trim().toLowerCase() +
-    $('#availability .a-color-state').first().text().trim().toLowerCase() +
-    $('#availability').first().text().trim().toLowerCase()
-  const bodyText = $('body').text().toLowerCase()
+    $('#availability').first().text().toLowerCase()
 
   let availability: Availability = 'in_stock'
-  if (/out of stock|unavailable|temporarily unavailable|sold out/.test(availabilityRaw) || /currently unavailable|out of stock|sold out/.test(bodyText)) {
+  if (/out of stock|sold out\b|temporarily unavailable/.test(availabilityRaw)) {
     availability = 'out_of_stock'
   }
 
