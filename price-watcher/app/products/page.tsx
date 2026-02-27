@@ -150,7 +150,7 @@ export default function ProductsPage() {
               </button>
             </div>
 
-            <div className="rounded-3xl border border-cream/10 bg-ink/60 overflow-hidden">
+            <div className="rounded-3xl border border-cream/10 bg-ink/60">
               {loading ? (
                 <div className="p-6 text-sm text-cream/50">Loading…</div>
               ) : products.length === 0 ? (
@@ -159,7 +159,8 @@ export default function ProductsPage() {
                   track with the form on the right.
                 </div>
               ) : (
-                <table className="w-full text-sm font-body">
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-[900px] text-sm font-body">
                   <thead className="bg-cream/5 text-cream/70">
                     <tr>
                       <th className="text-left px-5 py-3 font-normal">Name</th>
@@ -249,6 +250,7 @@ export default function ProductsPage() {
                     ))}
                   </tbody>
                 </table>
+              </div>
               )}
             </div>
           </div>
